@@ -3,6 +3,9 @@ import time
 import sys
 import configparser
 import os
+import ctypes
+ctypes.windll.user32.SetProcessDPIAware()
+
 
 config = configparser.ConfigParser()
 config.read('osuData.cfg')
@@ -40,7 +43,7 @@ os.system('cls')
 
 print("[Available beatmaps]")
 
-osu_path = os.path.join(f"C:/Users/{os.getlogin()}/AppData/Local/osu!/Songs")
+osu_path = os.path.join(f"C:/Users/mique/AppData/Local/osu!/Songs")
 
 num = 1
 for file in os.listdir(osu_path):
