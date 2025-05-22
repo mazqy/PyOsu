@@ -124,20 +124,25 @@ with open('Songs/3/1.txt', 'r') as file:
     float(par[2])
 ])
 
-pg.mixer.music.play(-1)
+
 pg.mixer.music.set_volume(volume)
+pg.mixer.music.play(0)
+
 
 while running:
+    
     for event in pg.event.get():
         if event.type == pg.QUIT:
             running = False
             sys.exit()
+    
+    curr_time = pg.mixer.music.get_pos()
     screen.fill((0, 0, 0))
     screen.blit(background, background.get_rect(center=(WIDTH//2, HEIGHT//2)))
     screen.blit(overlay, (offset_x, offset_y))
-    curr_time = (time.time() - prev_time)
+    
 
-    if len(circles) > 0 and curr_time*1000 >= circles[0][2] - preempt:
+    if len(circles) > 0 and curr_time >= circles[0][2] - preempt:
         circles_on_scene.append([circles[0], curr_time])
         circles.pop(0)
 
@@ -146,7 +151,7 @@ while running:
         circle, appear_time = circle_data
         x, y, hit_time = circle
 
-        time_since_appeared = (curr_time - appear_time) * 1000
+        time_since_appeared = (curr_time - appear_time)
 
         if time_since_appeared < fade_in:
             alpha = int((time_since_appeared / fade_in) * 255)
@@ -165,19 +170,20 @@ while running:
         temp_approach_circle.set_alpha(alpha)
         
 
-        scale_factor = max(1, 4 - 3 * (time_since_appeared / preempt))
+        scale_factor = max(1, 3 - 2 * (time_since_appeared / preempt))
 
         scaled_size = int(d * scale_factor)
         temp_approach_scaled = pg.transform.smoothscale(temp_approach_circle, (scaled_size, scaled_size))
 
         screen.blit(temp_approach_scaled, temp_approach_scaled.get_rect(center=(x, y)))
 
+
         screen.blit(temp_circle, temp_circle.get_rect(center=(x, y)))
         screen.blit(temp_overlay, temp_overlay.get_rect(center=(x, y)))
         screen.blit(temp_number, temp_number.get_rect(center=(x, y)))
 
 
-    if len(circles_on_scene) > 0 and curr_time*1000 >= circles_on_scene[0][0][2] + hit50_window:
+    if len(circles_on_scene) > 0 and curr_time >= circles_on_scene[0][0][2] + hit50_window:
             circles_on_scene.pop(0)
 
     mouse_pos = pg.mouse.get_pos()
