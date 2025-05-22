@@ -35,8 +35,8 @@ overlay.fill((0, 0, 0, 70))
 pg.init()
 pg.mixer.init()
 
-pg.mixer.music.load("Songs/3/audio.mp3")
-hitsound = pg.mixer.Sound(f"Skins/{skin_name}/soft-hitnormal.wav")
+pg.mixer.music.load("Songs/2/audio.mp3")
+hitsound = pg.mixer.Sound(f"Skins/old/soft-hitnormal.wav")
 hitsound.set_volume(0.2)
 
 screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -44,7 +44,7 @@ pg.display.set_caption("Osu!")
 
 icon = pg.image.load("Data/osu_logo.png")
 pg.display.set_icon(icon)
-background = pg.image.load("Songs/3/katamari2.png").convert_alpha()
+background = pg.image.load("Songs/2/katamari2.png").convert_alpha()
 background.set_alpha(dim)
 
 original_bg_width, original_bg_height = background.get_size()
@@ -117,7 +117,7 @@ angle = 0
 circles = []
 circles_on_scene = []
 
-with open('Songs/3/1.txt', 'r') as file:
+with open('Songs/2/1.txt', 'r') as file:
     for row in file:
         par = row.split(',')
         circles.append([
@@ -193,7 +193,7 @@ while running:
     mouse_pos_history.append([mouse_pos, curr_time])
 
     for x in mouse_pos_history[:]:
-        if x[1] >= curr_time - 0.1:
+        if x[1] >= curr_time - 100:
             screen.blit(cursor_trail, (x[0][0] - cursor_trail.get_size()[0]//2, x[0][1] - cursor_trail.get_size()[0]//2))
         else:
             mouse_pos_history.remove(x)
