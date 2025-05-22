@@ -2,6 +2,16 @@ import pygame as pg
 import time
 import sys
 import configparser
+import os
+
+print("[Available beatmaps]")
+
+num = 1
+for file in os.listdir("./Songs"):
+    print(f"{num}-{file}")
+    num+=1
+
+map = input("Map (ID): ")
 
 config = configparser.ConfigParser()
 config.read('osuData.cfg')
@@ -35,8 +45,8 @@ overlay.fill((0, 0, 0, 100))
 pg.init()
 pg.mixer.init()
 
-pg.mixer.music.load("Songs/3/audio.mp3")
-hitsound = pg.mixer.Sound(f"Skins/old/soft-hitnormal.wav")
+pg.mixer.music.load(f"Songs/{map}/audio.mp3")
+hitsound = pg.mixer.Sound(f"Skins/{skin_name}/hitsound.wav")
 hitsound.set_volume(0.2)
 
 screen = pg.display.set_mode((WIDTH, HEIGHT), pg.DOUBLEBUF)
@@ -44,7 +54,7 @@ pg.display.set_caption("Osu!")
 
 icon = pg.image.load("Data/osu_logo.png")
 pg.display.set_icon(icon)
-background = pg.image.load("Songs/3/katamari2.png").convert_alpha()
+background = pg.image.load(f"Songs/{map}/bg.png").convert_alpha()
 background.set_alpha(dim)
 
 original_bg_width, original_bg_height = background.get_size()
@@ -118,7 +128,7 @@ angle = 0
 circles = []
 circles_on_scene = []
 
-with open('Songs/3/1.txt', 'r') as file:
+with open(f'Songs/{map}/1.txt', 'r') as file:
     for row in file:
         par = row.split(',')
         circles.append([
@@ -128,10 +138,8 @@ with open('Songs/3/1.txt', 'r') as file:
     int(par[3])
 ])
 
-
 pg.mixer.music.set_volume(volume)
 pg.mixer.music.play(0)
-
 
 while running:
     
@@ -139,7 +147,9 @@ while running:
         if event.type == pg.QUIT:
             running = False
             sys.exit()
-    
+        elif event.type == pg.KEYDOWN:
+            if event.key == pg.K_q:
+                running = False
     curr_time = pg.mixer.music.get_pos()
     delta_time = (curr_time - prev_time) / 1000.0
     prev_time = curr_time
