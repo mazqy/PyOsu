@@ -30,31 +30,31 @@ scale_y = game_height / 384
 
 
 overlay = pg.Surface((game_width, game_height), pg.SRCALPHA)
-overlay.fill((0, 0, 0, 70))
+overlay.fill((0, 0, 0, 100))
 
 pg.init()
 pg.mixer.init()
 
-pg.mixer.music.load("Songs/2/audio.mp3")
+pg.mixer.music.load("Songs/3/audio.mp3")
 hitsound = pg.mixer.Sound(f"Skins/old/soft-hitnormal.wav")
 hitsound.set_volume(0.2)
 
-screen = pg.display.set_mode((WIDTH, HEIGHT))
+screen = pg.display.set_mode((WIDTH, HEIGHT), pg.DOUBLEBUF)
 pg.display.set_caption("Osu!")
 
 icon = pg.image.load("Data/osu_logo.png")
 pg.display.set_icon(icon)
-background = pg.image.load("Songs/2/katamari2.png").convert_alpha()
+background = pg.image.load("Songs/3/katamari2.png").convert_alpha()
 background.set_alpha(dim)
 
 original_bg_width, original_bg_height = background.get_size()
 
-new_bg_width = int(original_bg_width * (HEIGHT / original_bg_height))
+new_bg_height = int(original_bg_height * (WIDTH / original_bg_width))
 
-background = pg.transform.smoothscale(background, (new_bg_width, HEIGHT))
+background = pg.transform.smoothscale(background, (WIDTH, new_bg_height))
+
 
 approach_circle = pg.image.load(f"Skins/{skin_name}/approachcircle.png").convert_alpha()
-approach_circle.set_alpha(255)
 
 cursor = pg.image.load(f"Skins/{skin_name}/cursor.png").convert_alpha()
 #cursor_middle = pg.image.load(f"Skins/{skin_name}/cursormiddle.png").convert_alpha()
@@ -72,24 +72,25 @@ def colorize_white_image(image, new_color):
     tinted_image.blit(color_surface, (0, 0), special_flags=pg.BLEND_RGBA_MULT)
     return tinted_image
 
+config.read("Songs/3/settings.cfg")
+CS = config.getfloat('Difficulty', 'CircleSize')
 
-CS = 4
 r = (54.4 - (4.48 * CS))*scale_y
 d = int(r*2)
 
-AR = 9.3
+AR = CS = config.getfloat('Difficulty', 'ApproachRate')
 
 if AR < 5:
     preempt = 1200 + 600 * (5 - AR) / 5
     fade_in = 800 + 400 * (5 - AR) / 5
-elif AR == 5:
-    preempt = 1200
-    fade_in = 800
 elif AR > 5:
     preempt = 1200 - 750 * (AR - 5) / 5
     fade_in = 800 - 500 * (AR - 5) / 5
+else:
+    preempt = 1200
+    fade_in = 800
 
-OD = 8.5
+OD = CS = config.getfloat('Difficulty', 'OverallDifficulty')
 
 hit300_window = 80-6*OD
 hit100_window = 140-8*OD
@@ -117,13 +118,14 @@ angle = 0
 circles = []
 circles_on_scene = []
 
-with open('Songs/2/1.txt', 'r') as file:
+with open('Songs/3/1.txt', 'r') as file:
     for row in file:
         par = row.split(',')
         circles.append([
     int(par[0]) * scale_x + offset_x,
     int(par[1]) * scale_y + offset_y,
-    float(par[2])
+    float(par[2]),
+    int(par[3])
 ])
 
 
@@ -139,6 +141,9 @@ while running:
             sys.exit()
     
     curr_time = pg.mixer.music.get_pos()
+    delta_time = (curr_time - prev_time) / 1000.0
+    prev_time = curr_time
+    
     screen.fill((0, 0, 0))
     screen.blit(background, background.get_rect(center=(WIDTH//2, HEIGHT//2)))
     screen.blit(overlay, (offset_x, offset_y))
@@ -151,7 +156,7 @@ while running:
 
     for circle_data in circles_on_scene:
         circle, appear_time = circle_data
-        x, y, hit_time = circle
+        x, y, hit_time, note_type = circle
 
         time_since_appeared = (curr_time - appear_time)
 
@@ -191,6 +196,8 @@ while running:
 
     mouse_pos = pg.mouse.get_pos()
     mouse_pos_history.append([mouse_pos, curr_time])
+    if len(mouse_pos_history) > 10:
+        mouse_pos_history.pop(0)
 
     for x in mouse_pos_history[:]:
         if x[1] >= curr_time - 100:
