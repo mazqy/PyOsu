@@ -22,15 +22,15 @@ else:
     game_width = WIDTH*0.8
     game_height = int(game_width / target_aspect)
 
-offset_x = (WIDTH - game_width) // 2
-offset_y = (HEIGHT - game_height) // 2
+offset_x = (WIDTH - game_width) / 2
+offset_y = (HEIGHT - game_height) / 2
 
 scale_x = game_width / 512
 scale_y = game_height / 384
 
 
 overlay = pg.Surface((game_width, game_height), pg.SRCALPHA)
-overlay.fill((0, 255, 0, 0))
+overlay.fill((0, 0, 0, 70))
 
 pg.init()
 pg.mixer.init()
@@ -53,9 +53,10 @@ background = pg.transform.smoothscale(background, (new_bg_width, HEIGHT))
 
 approach_circle = pg.image.load(f"Skins/{skin_name}/approachcircle.png").convert_alpha()
 approach_circle.set_alpha(255)
+
 cursor = pg.image.load(f"Skins/{skin_name}/cursor.png").convert_alpha()
-cursor_middle = pg.image.load(f"Skins/{skin_name}/cursormiddle.png").convert_alpha()
-cursor_middle = pg.transform.smoothscale(cursor_middle, (cursor_middle.get_size()[0] * cursor_size,cursor_middle.get_size()[1] * cursor_size))
+#cursor_middle = pg.image.load(f"Skins/{skin_name}/cursormiddle.png").convert_alpha()
+#cursor_middle = pg.transform.smoothscale(cursor_middle, (cursor_middle.get_size()[0] * cursor_size,cursor_middle.get_size()[1] * cursor_size))
 cursor_trail = pg.image.load(f"Skins/{skin_name}/cursortrail.png").convert_alpha()
 cursor = pg.transform.smoothscale(cursor, (cursor.get_size()[0] * cursor_size,cursor.get_size()[1] * cursor_size))
 cursor_trail = pg.transform.smoothscale(cursor_trail, (cursor_trail.get_size()[0] * cursor_size,cursor_trail.get_size()[1] * cursor_size))
@@ -94,11 +95,14 @@ hit50_window = 200-10*OD
 
 
 circle_sprite = colorize_white_image(circle_sprite, (255, 0, 0))
+approach_circle = colorize_white_image(approach_circle, (255, 0, 0))
+approach_circle = pg.transform.smoothscale(approach_circle, (d, d))
+
 circle_sprite = pg.transform.smoothscale(circle_sprite, (d, d))
 circle_overlay = pg.image.load(f"Skins/{skin_name}/hitcircleoverlay.png")
 circle_overlay = pg.transform.smoothscale(circle_overlay, (d, d))
 number1 = pg.image.load(f"Skins/{skin_name}/default-2.png")
-number1 = pg.transform.smoothscale(number1, (number1.get_size()[0]*0.4, number1.get_size()[1]*0.4))
+number1 = pg.transform.smoothscale(number1, (number1.get_size()[0]*0.8, number1.get_size()[1]*0.8))
 
 running = True
 clock = pg.time.Clock()
@@ -159,10 +163,15 @@ while running:
         temp_overlay.set_alpha(alpha)
         temp_number.set_alpha(alpha)
         temp_approach_circle.set_alpha(alpha)
-        temp_approach_circle = pg.transform.smoothscale(temp_approach_circle, )
         
 
-        screen.blit(temp_approach_circle, temp_approach_circle.get_rect(center=(x, y)))
+        scale_factor = max(1, 4 - 3 * (time_since_appeared / preempt))
+
+        scaled_size = int(d * scale_factor)
+        temp_approach_scaled = pg.transform.smoothscale(temp_approach_circle, (scaled_size, scaled_size))
+
+        screen.blit(temp_approach_scaled, temp_approach_scaled.get_rect(center=(x, y)))
+
         screen.blit(temp_circle, temp_circle.get_rect(center=(x, y)))
         screen.blit(temp_overlay, temp_overlay.get_rect(center=(x, y)))
         screen.blit(temp_number, temp_number.get_rect(center=(x, y)))
@@ -183,7 +192,7 @@ while running:
     rotated_cursor = pg.transform.rotate(cursor, angle)
     rotated_rect = rotated_cursor.get_rect(center=mouse_pos)
     screen.blit(rotated_cursor, rotated_rect.topleft)
-    screen.blit(cursor_middle, cursor_middle.get_rect(center=mouse_pos))
+    #screen.blit(cursor_middle, cursor_middle.get_rect(center=mouse_pos))
 
     angle -= 0.5
     pg.display.flip()
