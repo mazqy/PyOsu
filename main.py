@@ -36,6 +36,8 @@ pg.init()
 pg.mixer.init()
 
 pg.mixer.music.load("Songs/3/audio.mp3")
+hitsound = pg.mixer.Sound(f"Skins/{skin_name}/soft-hitnormal.wav")
+hitsound.set_volume(0.2)
 
 screen = pg.display.set_mode((WIDTH, HEIGHT))
 pg.display.set_caption("Osu!")
@@ -183,7 +185,8 @@ while running:
         screen.blit(temp_number, temp_number.get_rect(center=(x, y)))
 
 
-    if len(circles_on_scene) > 0 and curr_time >= circles_on_scene[0][0][2] + hit50_window:
+    if len(circles_on_scene) > 0 and curr_time >= circles_on_scene[0][0][2]:
+            hitsound.play()
             circles_on_scene.pop(0)
 
     mouse_pos = pg.mouse.get_pos()
