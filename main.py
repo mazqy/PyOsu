@@ -4,18 +4,18 @@ import sys
 import configparser
 import os
 
-
-
 config = configparser.ConfigParser()
 config.read('osuData.cfg')
 
 volume = config.getfloat('Audio', 'Volume')
-dim = config.getint('Game', 'Dim')
+dim = config.getfloat('Game', 'Dim')
+play_area_dim = config.getfloat('Game', 'PlayArea')
 skin_name = config.get('General', 'Skin')
 cursor_size = config.getfloat('General', 'CursorSize')
 FPS = config.getint('Screen', 'FPS')
 WIDTH = config.getint('Screen', 'Width')
 HEIGHT = config.getint('Screen', 'Height')
+fullscreen = config.getboolean('Screen', 'Fullscreen')
 
 target_aspect = 4 / 3
 if WIDTH / HEIGHT > target_aspect:
@@ -33,7 +33,7 @@ scale_y = game_height / 384
 
 
 overlay = pg.Surface((game_width, game_height), pg.SRCALPHA)
-overlay.fill((0, 0, 0, 100))
+overlay.fill((0, 0, 0, play_area_dim))
 
 os.system('cls')
 
@@ -127,14 +127,18 @@ angle = 0
 circles_on_scene = []
 
 
-
-
 pg.init()
 pg.mixer.init()
 
-screen = pg.display.set_mode((WIDTH, HEIGHT), pg.DOUBLEBUF)
-pg.display.set_caption("Osu!")
+if fullscreen:
+    screen = pg.display.set_mode((WIDTH, HEIGHT), pg.DOUBLEBUF | pg.FULLSCREEN)
+    
+else:
+    screen = pg.display.set_mode((WIDTH, HEIGHT), pg.DOUBLEBUF)
 
+print("Fullscreen:", fullscreen)
+
+pg.display.set_caption("Osu!")
 icon = pg.image.load("Data/osu_logo.png")
 pg.display.set_icon(icon)
 
