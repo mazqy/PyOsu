@@ -64,22 +64,36 @@ map_dif = input("Dif: ")
 osu_info_path = os.path.join(osu_map_path, map_dif)
 
 circles = []
+combo_colors = []
+
+
+
 
 with open(osu_info_path, encoding='utf-8') as f:
     hitobjects_section = False
-
+    combo_colors = []
+    color_index = 0
+    combo_num = 1
     for line in f:
         if hitobjects_section:
             line = line.strip()
             if not line:
                 continue
             par = line.split(',')
+            
+            if int(par[3]) == 2:
+                color_index = (color_index + 1) % len(combo_colors)
+
+            color = combo_colors[color_index]
+
             circles.append([
                 int(par[0]) * scale_x + offset_x,
                 int(par[1]) * scale_y + offset_y,
                 float(par[2]),
-                int(par[3])
+                int(par[3]),
+                color
             ])
+            
         elif line.startswith("AudioFilename:"):
             map_song = line.split(":", 1)[1].strip()
             print("AudioFilename:", map_song)
@@ -95,14 +109,16 @@ with open(osu_info_path, encoding='utf-8') as f:
         elif line.startswith('0,0,"'):
             bg_file_name = line.split('"')[1]
             print("BG file:", bg_file_name)
-            
+        elif line.startswith(f"Combo{combo_num} :"):
+            colors = [int(color.strip()) for color in line.split(":")[1].split(",")]
+            combo_colors.append((colors[0], colors[1], colors[2]))
+            combo_num += 1
         elif line.startswith("[HitObjects]"):
             hitobjects_section = True
 
 
+print("Combo colors:", combo_colors)
 audio_file = os.path.join(osu_map_path, map_song)
-
-
 
 r = (54.4 - (4.48 * CS))*scale_y
 d = int(r*2)
@@ -160,8 +176,6 @@ def colorize_white_image(image, new_color):
     tinted_image.blit(color_surface, (0, 0), special_flags=pg.BLEND_RGBA_MULT)
     return tinted_image
 
-circle_sprite = colorize_white_image(circle_sprite, (255, 0, 0))
-approach_circle = colorize_white_image(approach_circle, (255, 0, 0))
 approach_circle = pg.transform.smoothscale(approach_circle, (d, d))
 
 circle_sprite = pg.transform.smoothscale(circle_sprite, (d, d))
@@ -193,7 +207,7 @@ pg.mixer.music.load(audio_file)
 pg.mixer.music.set_volume(volume)
 pg.mixer.music.play(0)
 
-
+color_index = 0
 
 while running:
     
@@ -225,7 +239,10 @@ while running:
 
     for circle_data in circles_on_scene:
         circle, appear_time = circle_data
-        x, y, hit_time, note_type = circle
+        x, y, hit_time, note_type, color = circle
+
+        circle_sprite_colored = colorize_white_image(circle_sprite, color)
+        approach_circle_colored = colorize_white_image(approach_circle, color)
 
         time_since_appeared = (curr_time - appear_time)
 
@@ -235,14 +252,15 @@ while running:
         else:
             alpha = 255
 
-        temp_circle = circle_sprite.copy()
-        temp_overlay = circle_overlay.copy()
-        temp_number = number1.copy()
+        temp_circle = circle_sprite_colored.copy()
+        temp_approach_circle = approach_circle_colored.copy()
+
+        #temp_number = number1.copy()
         temp_approach_circle = approach_circle.copy()
 
         temp_circle.set_alpha(alpha)
-        temp_overlay.set_alpha(alpha)
-        temp_number.set_alpha(alpha)
+        temp_approach_circle.set_alpha(alpha)
+        #temp_number.set_alpha(alpha)
         temp_approach_circle.set_alpha(alpha)
         
 
@@ -255,8 +273,8 @@ while running:
 
 
         screen.blit(temp_circle, temp_circle.get_rect(center=(x, y)))
-        screen.blit(temp_overlay, temp_overlay.get_rect(center=(x, y)))
-        screen.blit(temp_number, temp_number.get_rect(center=(x, y)))
+        screen.blit(temp_approach_circle, temp_approach_circle.get_rect(center=(x, y)))
+        #screen.blit(temp_number, temp_number.get_rect(center=(x, y)))
 
 
     if len(circles_on_scene) > 0 and curr_time >= circles_on_scene[0][0][2]:
