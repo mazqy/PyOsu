@@ -45,7 +45,7 @@ def main():
 
     print(" [Available beatmaps]\n")
 
-    osu_path = os.path.join(f"C:/Users/mique/AppData/Local/osu!/Songs")
+    osu_path = os.path.join(f"C:/Users/{os.getlogin()}/AppData/Local/osu!/Songs")
 
     num = 1
 
@@ -334,7 +334,7 @@ def main():
         pg.display.flip()
 
         fps = int(clock.get_fps())
-        pg.display.set_caption(f"Osu! FPS: {fps}")
+        pg.display.set_caption(f"PyOsu! FPS: {fps}")
 
         clock.tick(FPS)
 
