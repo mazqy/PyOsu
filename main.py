@@ -10,7 +10,7 @@ config.read('osuData.cfg')
 volume = config.getfloat('Audio', 'Volume')
 hitsound_volume = config.getfloat('Audio', 'HitsoundVolume')
 dim = config.getfloat('Game', 'Dim')
-play_area_dim = config.getfloat('Game', 'PlayArea')
+play_area_dim = config.getfloat('Game', 'PlayAreaDim')
 skin_name = config.get('General', 'Skin')
 cursor_size = config.getfloat('General', 'CursorSize')
 FPS = config.getint('Screen', 'FPS')
@@ -240,7 +240,8 @@ while running:
         circles.pop(0)
 
 
-    for circle_data in circles_on_scene:
+    for circle_data in reversed(circles_on_scene):
+
         circle, appear_time = circle_data
         x, y, hit_time, note_type, color = circle
 
@@ -276,7 +277,10 @@ while running:
         
 
         screen.blit(temp_circle, temp_circle.get_rect(center=(x, y)))
-        screen.blit(circle_overlay, circle_overlay.get_rect(center=(x, y)))
+        temp_overlay = circle_overlay.copy()
+        temp_overlay.set_alpha(alpha)
+        screen.blit(temp_overlay, temp_overlay.get_rect(center=(x, y)))
+
         #screen.blit(temp_number, temp_number.get_rect(center=(x, y)))
 
 
