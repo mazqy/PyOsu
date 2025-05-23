@@ -208,6 +208,11 @@ while running:
     delta_time = (curr_time - prev_time) / 1000.0
     prev_time = curr_time
     
+    if not pg.mixer.music.get_busy():
+        print("Trak finished")
+        pg.time.delay(3000)
+        running = False
+
     screen.fill((0, 0, 0))
     screen.blit(background, background.get_rect(center=(WIDTH//2, HEIGHT//2)))
     screen.blit(overlay, (offset_x, offset_y))
