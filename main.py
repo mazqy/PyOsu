@@ -66,6 +66,7 @@ osu_info_path = os.path.join(osu_map_path, map_dif)
 
 circles = []
 combo_colors = []
+has_combo_colors = False
 
 with open(osu_info_path, encoding='utf-8') as f:
     hitobjects_section = False
@@ -80,9 +81,13 @@ with open(osu_info_path, encoding='utf-8') as f:
             par = line.split(',')
             
             if int(par[3]) == 2:
-                color_index = (color_index + 1) % len(combo_colors)
+                has_combo_colors = True
+                if color_index >= len(combo_colors) - 1:
+                    color_index = 0
+                else:
+                    color_index += 1
 
-            color = combo_colors[color_index]
+            color = combo_colors[color_index] if combo_colors else (255, 255, 255)
 
             circles.append([
                 int(par[0]) * scale_x + offset_x,
