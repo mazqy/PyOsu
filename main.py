@@ -4,14 +4,7 @@ import sys
 import configparser
 import os
 
-print("[Available beatmaps]")
 
-num = 1
-for file in os.listdir("./Songs"):
-    print(f"{num}-{file}")
-    num+=1
-
-map = input("Map (ID): ")
 
 config = configparser.ConfigParser()
 config.read('osuData.cfg')
@@ -42,27 +35,108 @@ scale_y = game_height / 384
 overlay = pg.Surface((game_width, game_height), pg.SRCALPHA)
 overlay.fill((0, 0, 0, 100))
 
+os.system('cls')
+
+print("[Available beatmaps]")
+
+osu_path = os.path.join("C:/Users/mique/AppData/Local/osu!/Songs")
+
+num = 1
+for file in os.listdir(osu_path):
+    print(f"{num}-{file}")
+    num+=1
+
+map = input("Map name: ")
+
+osu_map_path = os.path.join(osu_path, map)
+
+os.system('cls')
+
+num = 1
+for file in os.listdir(osu_map_path):
+    if file.endswith(".osu"):
+        print(f"{num} - {file}")
+        num += 1
+
+map_dif = input("Dif: ")
+
+
+osu_info_path = os.path.join(osu_map_path, map_dif)
+
+circles = []
+
+with open(osu_info_path, encoding='utf-8') as f:
+    hitobjects_section = False
+
+    for line in f:
+        if hitobjects_section:
+            line = line.strip()
+            if not line:
+                continue
+            par = line.split(',')
+            circles.append([
+                int(par[0]) * scale_x + offset_x,
+                int(par[1]) * scale_y + offset_y,
+                float(par[2]),
+                int(par[3])
+            ])
+        elif line.startswith("AudioFilename:"):
+            map_song = line.split(":", 1)[1].strip()
+            print("AudioFilename:", map_song)
+        elif line.startswith("CircleSize:"):
+            CS = float(line.split(":", 1)[1].strip())
+            print("CircleSize:", str(CS))
+        elif line.startswith("ApproachRate:"):
+            AR = float(line.split(":", 1)[1].strip())
+            print("ApproachRate:", str(AR))
+        elif line.startswith("OverallDifficulty:"):
+            OD = float(line.split(":", 1)[1].strip())
+            print("OverallDifficulty:", str(OD))
+        elif line.startswith('0,0,"'):
+            bg_file_name = line.split('"')[1]
+            print("BG file:", bg_file_name)
+            
+        elif line.startswith("[HitObjects]"):
+            hitobjects_section = True
+
+
+audio_file = os.path.join(osu_map_path, map_song)
+
+
+
+r = (54.4 - (4.48 * CS))*scale_y
+d = int(r*2)
+
+if AR < 5:
+    preempt = 1200 + 600 * (5 - AR) / 5
+    fade_in = 800 + 400 * (5 - AR) / 5
+elif AR > 5:
+    preempt = 1200 - 750 * (AR - 5) / 5
+    fade_in = 800 - 500 * (AR - 5) / 5
+else:
+    preempt = 1200
+    fade_in = 800
+
+
+hit300_window = 80-6*OD
+hit100_window = 140-8*OD
+hit50_window = 200-10*OD
+
+mouse_pos_history = []
+angle = 0
+circles_on_scene = []
+
+
+
+
 pg.init()
 pg.mixer.init()
-
-pg.mixer.music.load(f"Songs/{map}/audio.mp3")
-hitsound = pg.mixer.Sound(f"Skins/{skin_name}/hitsound.wav")
-hitsound.set_volume(0.2)
 
 screen = pg.display.set_mode((WIDTH, HEIGHT), pg.DOUBLEBUF)
 pg.display.set_caption("Osu!")
 
 icon = pg.image.load("Data/osu_logo.png")
 pg.display.set_icon(icon)
-background = pg.image.load(f"Songs/{map}/bg.png").convert_alpha()
-background.set_alpha(dim)
-
-original_bg_width, original_bg_height = background.get_size()
-
-new_bg_height = int(original_bg_height * (WIDTH / original_bg_width))
-
-background = pg.transform.smoothscale(background, (WIDTH, new_bg_height))
-
 
 approach_circle = pg.image.load(f"Skins/{skin_name}/approachcircle.png").convert_alpha()
 
@@ -82,31 +156,6 @@ def colorize_white_image(image, new_color):
     tinted_image.blit(color_surface, (0, 0), special_flags=pg.BLEND_RGBA_MULT)
     return tinted_image
 
-config.read("Songs/3/settings.cfg")
-CS = config.getfloat('Difficulty', 'CircleSize')
-
-r = (54.4 - (4.48 * CS))*scale_y
-d = int(r*2)
-
-AR = CS = config.getfloat('Difficulty', 'ApproachRate')
-
-if AR < 5:
-    preempt = 1200 + 600 * (5 - AR) / 5
-    fade_in = 800 + 400 * (5 - AR) / 5
-elif AR > 5:
-    preempt = 1200 - 750 * (AR - 5) / 5
-    fade_in = 800 - 500 * (AR - 5) / 5
-else:
-    preempt = 1200
-    fade_in = 800
-
-OD = CS = config.getfloat('Difficulty', 'OverallDifficulty')
-
-hit300_window = 80-6*OD
-hit100_window = 140-8*OD
-hit50_window = 200-10*OD
-
-
 circle_sprite = colorize_white_image(circle_sprite, (255, 0, 0))
 approach_circle = colorize_white_image(approach_circle, (255, 0, 0))
 approach_circle = pg.transform.smoothscale(approach_circle, (d, d))
@@ -117,29 +166,30 @@ circle_overlay = pg.transform.smoothscale(circle_overlay, (d, d))
 number1 = pg.image.load(f"Skins/{skin_name}/default-2.png")
 number1 = pg.transform.smoothscale(number1, (number1.get_size()[0]*0.8, number1.get_size()[1]*0.8))
 
+bg_path = os.path.join(osu_map_path, bg_file_name)
+background = pg.image.load(bg_path).convert_alpha()
+background.set_alpha(dim)
+
+original_bg_width, original_bg_height = background.get_size()
+
+new_bg_height = int(original_bg_height * (WIDTH / original_bg_width))
+
+background = pg.transform.smoothscale(background, (WIDTH, new_bg_height))
+
 running = True
 clock = pg.time.Clock()
 prev_time = time.time()
 circle_prev_time = prev_time
 pg.mouse.set_visible(False)
 
-mouse_pos_history = []
-angle = 0
-circles = []
-circles_on_scene = []
+hitsound = pg.mixer.Sound(f"Skins/{skin_name}/hitsound.wav")
+hitsound.set_volume(0.2)
 
-with open(f'Songs/{map}/1.txt', 'r') as file:
-    for row in file:
-        par = row.split(',')
-        circles.append([
-    int(par[0]) * scale_x + offset_x,
-    int(par[1]) * scale_y + offset_y,
-    float(par[2]),
-    int(par[3])
-])
-
+pg.mixer.music.load(audio_file)
 pg.mixer.music.set_volume(volume)
 pg.mixer.music.play(0)
+
+
 
 while running:
     
