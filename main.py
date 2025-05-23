@@ -40,7 +40,7 @@ os.system('cls')
 
 print("[Available beatmaps]")
 
-osu_path = os.path.join("C:/Users/mique/AppData/Local/osu!/Songs")
+osu_path = os.path.join(f"C:/Users/{os.getlogin()}/AppData/Local/osu!/Songs")
 
 num = 1
 for file in os.listdir(osu_path):
