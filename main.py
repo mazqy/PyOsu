@@ -8,6 +8,7 @@ config = configparser.ConfigParser()
 config.read('osuData.cfg')
 
 volume = config.getfloat('Audio', 'Volume')
+hitsound_volume = config.getfloat('Audio', 'HitsoundVolume')
 dim = config.getfloat('Game', 'Dim')
 play_area_dim = config.getfloat('Game', 'PlayArea')
 skin_name = config.get('General', 'Skin')
@@ -65,9 +66,6 @@ osu_info_path = os.path.join(osu_map_path, map_dif)
 
 circles = []
 combo_colors = []
-
-
-
 
 with open(osu_info_path, encoding='utf-8') as f:
     hitobjects_section = False
@@ -201,7 +199,7 @@ circle_prev_time = prev_time
 pg.mouse.set_visible(False)
 
 hitsound = pg.mixer.Sound(f"Skins/{skin_name}/hitsound.wav")
-hitsound.set_volume(0.2)
+hitsound.set_volume(hitsound_volume)
 
 pg.mixer.music.load(audio_file)
 pg.mixer.music.set_volume(volume)
@@ -270,10 +268,10 @@ while running:
         temp_approach_scaled = pg.transform.smoothscale(temp_approach_circle, (scaled_size, scaled_size))
 
         screen.blit(temp_approach_scaled, temp_approach_scaled.get_rect(center=(x, y)))
-
+        
 
         screen.blit(temp_circle, temp_circle.get_rect(center=(x, y)))
-        screen.blit(temp_approach_circle, temp_approach_circle.get_rect(center=(x, y)))
+        screen.blit(circle_overlay, circle_overlay.get_rect(center=(x, y)))
         #screen.blit(temp_number, temp_number.get_rect(center=(x, y)))
 
 
