@@ -5,83 +5,126 @@ import configparser
 import os
 import ctypes
 
+ctypes.windll.user32.SetProcessDPIAware()
+
+config = configparser.ConfigParser()
+config.read('osuData.cfg')
+
+volume = config.getfloat('Audio', 'Volume')
+hitsound_volume = config.getfloat('Audio', 'HitsoundVolume')
+dim = config.getfloat('Game', 'Dim')
+play_area_dim = config.getfloat('Game', 'PlayAreaDim')
+skin_name = config.get('General', 'Skin')
+cursor_size = config.getfloat('General', 'CursorSize')
+FPS = config.getint('Screen', 'FPS')
+WIDTH = config.getint('Screen', 'Width')
+HEIGHT = config.getint('Screen', 'Height')
+fullscreen = config.getboolean('Screen', 'Fullscreen')
+
+target_aspect = 4 / 3
+if WIDTH / HEIGHT > target_aspect:
+    game_height = HEIGHT*0.8
+    game_width = int(game_height * target_aspect)
+else:
+    game_width = WIDTH*0.8
+    game_height = int(game_width / target_aspect)
+
+offset_x = (WIDTH - game_width) / 2
+offset_y = (HEIGHT - game_height) / 2
+
+scale_x = game_width / 512
+scale_y = game_height / 384
+
+
+overlay = pg.Surface((game_width, game_height), pg.SRCALPHA)
+overlay.fill((0, 0, 0, play_area_dim))
+
+osu_path = os.path.join(f"C:/Users/{os.getlogin()}/AppData/Local/osu!")
+osu_path_songs = os.path.join(osu_path + "/Songs")
+osu_path_skins = os.path.join(osu_path + "/Skins")
+
+os.system('cls')
+print(" --[PyOsu!]--\n")
+print(" 1- Play")
+print(" 2- Skin")
+print(" 3- Settings")
+menu_input = int(input("\n >>"))
+
+skins = []
+
+def menu_skin(skin_name):
+    index = 1
+    os.system('cls')
+    print("[Skins] (Not all skins compatible)\n")
+    print("Current: " + skin_name + "\n")
+    for skin in os.listdir(osu_path_skins):
+        skins.append(skin)
+        print(f"{index}- {skin}")
+        index+=1
+    skin_input = int(input("\n >>"))
+
+    config['General']['Skin'] = skins[skin_input - 1]
+    new_skin_name = skins[skin_input - 1]
+
+    with open('osuData.cfg', 'w') as configfile:
+        config.write(configfile)
+    return new_skin_name
+    
+
+
+match menu_input:
+    case 1:
+        pass
+    case 2:
+        skin_name = menu_skin(skin_name)
+        input("\n[.] Skin has been successfully applied! Press any key to continue...")
+    case 3:
+        pass
+
+
 def main():
-    ctypes.windll.user32.SetProcessDPIAware()
-
-
-    config = configparser.ConfigParser()
-    config.read('osuData.cfg')
-
-    volume = config.getfloat('Audio', 'Volume')
-    hitsound_volume = config.getfloat('Audio', 'HitsoundVolume')
-    dim = config.getfloat('Game', 'Dim')
-    play_area_dim = config.getfloat('Game', 'PlayAreaDim')
-    skin_name = config.get('General', 'Skin')
-    cursor_size = config.getfloat('General', 'CursorSize')
-    FPS = config.getint('Screen', 'FPS')
-    WIDTH = config.getint('Screen', 'Width')
-    HEIGHT = config.getint('Screen', 'Height')
-    fullscreen = config.getboolean('Screen', 'Fullscreen')
-
-    target_aspect = 4 / 3
-    if WIDTH / HEIGHT > target_aspect:
-        game_height = HEIGHT*0.8
-        game_width = int(game_height * target_aspect)
-    else:
-        game_width = WIDTH*0.8
-        game_height = int(game_width / target_aspect)
-
-    offset_x = (WIDTH - game_width) / 2
-    offset_y = (HEIGHT - game_height) / 2
-
-    scale_x = game_width / 512
-    scale_y = game_height / 384
-
-
-    overlay = pg.Surface((game_width, game_height), pg.SRCALPHA)
-    overlay.fill((0, 0, 0, play_area_dim))
+    
 
     os.system('cls')
 
-    print(" [Available beatmaps]\n")
-
-    osu_path = os.path.join(f"C:/Users/{os.getlogin()}/AppData/Local/osu!/Songs")
-
+    print("[Beatmaps]\n")
     num = 1
 
     available_maps = []
 
-    for file in os.listdir(osu_path):
+    for file in os.listdir(osu_path_songs):
         available_maps.append(file)
         file = file.split(" ", 1)[1]
-        print(f" {num}- {file}")
+        print(f"{num}- {file}")
         num += 1
 
 
-    print("\n [!] (Ctr + f) to find\n")
+    print("\n[!] Press Ctrl + F to search (Legacy Console only)")
+    print('[!] Right-click the top bar and select "Find" to search\n')
+
     input_index_map = int(input(" >>"))
 
     map = available_maps[input_index_map - 1]
 
     print(map)
 
-    osu_map_path = os.path.join(osu_path, map)
+    osu_map_path = os.path.join(osu_path_songs, map)
 
     os.system('cls')
 
     map_dificulties = []
 
-    print(" [Beatmap difficulties]\n")
+    print("[Beatmap difficulties]\n")
 
     num = 1
     for file in os.listdir(osu_map_path):
         if file.endswith(".osu"):
             map_dificulties.append(file)
             file = file.split("[")[1].split("]")[0]
-            print(f" {num} - {file}")
+            print(f"{num}- {file}")
             num += 1
 
-    print("\n [!] Difficulties are not sorted by star rate\n")
+    print("\n[!] Difficulties are not sorted by star rate\n")
 
     map_dif_index = int(input(" >>"))
 
@@ -93,6 +136,8 @@ def main():
     circles = []
     combo_colors = []
     has_combo_colors = False
+
+    has_background = False
 
     with open(osu_info_path, encoding='utf-8') as f:
         hitobjects_section = False
@@ -123,26 +168,27 @@ def main():
                     color
                 ])
                 
-            elif line.startswith("AudioFilename:"):
+            if line.startswith("AudioFilename:"):
                 map_song = line.split(":", 1)[1].strip()
                 print("AudioFilename:", map_song)
-            elif line.startswith("CircleSize:"):
+            if line.startswith("CircleSize:"):
                 CS = float(line.split(":", 1)[1].strip())
                 print("CircleSize:", str(CS))
-            elif line.startswith("ApproachRate:"):
+            if line.startswith("ApproachRate:"):
                 AR = float(line.split(":", 1)[1].strip())
                 print("ApproachRate:", str(AR))
-            elif line.startswith("OverallDifficulty:"):
+            if line.startswith("OverallDifficulty:"):
                 OD = float(line.split(":", 1)[1].strip())
                 print("OverallDifficulty:", str(OD))
-            elif line.startswith('0,0,"'):
+            if line.startswith('0,0,"'):
+                has_background = True
                 bg_file_name = line.split('"')[1]
                 print("BG file:", bg_file_name)
-            elif line.startswith(f"Combo{combo_num} :"):
+            if line.startswith(f"Combo{combo_num} :"):
                 colors = [int(color.strip()) for color in line.split(":")[1].split(",")]
                 combo_colors.append((colors[0], colors[1], colors[2]))
                 combo_num += 1
-            elif line.startswith("[HitObjects]"):
+            if line.startswith("[HitObjects]"):
                 hitobjects_section = True
 
 
@@ -187,16 +233,17 @@ def main():
     icon = pg.image.load("Data/osu_logo.png")
     pg.display.set_icon(icon)
 
-    approach_circle = pg.image.load(f"Skins/{skin_name}/approachcircle.png").convert_alpha()
+    
+    approach_circle = pg.image.load(osu_path_skins + f"/{skin_name}/approachcircle.png").convert_alpha()
 
-    cursor = pg.image.load(f"Skins/{skin_name}/cursor.png").convert_alpha()
-    #cursor_middle = pg.image.load(f"Skins/{skin_name}/cursormiddle.png").convert_alpha()
+    cursor = pg.image.load(osu_path_skins + f"/{skin_name}/cursor.png").convert_alpha()
+    #cursor_middle = pg.image.load(osu_path_skins + "/cursormiddle.png").convert_alpha()
     #cursor_middle = pg.transform.smoothscale(cursor_middle, (cursor_middle.get_size()[0] * cursor_size,cursor_middle.get_size()[1] * cursor_size))
-    cursor_trail = pg.image.load(f"Skins/{skin_name}/cursortrail.png").convert_alpha()
+    cursor_trail = pg.image.load(osu_path_skins + f"/{skin_name}/cursortrail.png").convert_alpha()
     cursor = pg.transform.smoothscale(cursor, (cursor.get_size()[0] * cursor_size,cursor.get_size()[1] * cursor_size))
     cursor_trail = pg.transform.smoothscale(cursor_trail, (cursor_trail.get_size()[0] * cursor_size,cursor_trail.get_size()[1] * cursor_size))
 
-    circle_sprite = pg.image.load(f"Skins/{skin_name}/hitcircle.png").convert_alpha()
+    circle_sprite = pg.image.load(osu_path_skins + f"/{skin_name}/hitcircle.png").convert_alpha()
 
     def colorize_white_image(image, new_color):
         tinted_image = image.copy()
@@ -208,28 +255,28 @@ def main():
     approach_circle = pg.transform.smoothscale(approach_circle, (d, d))
 
     circle_sprite = pg.transform.smoothscale(circle_sprite, (d, d))
-    circle_overlay = pg.image.load(f"Skins/{skin_name}/hitcircleoverlay.png")
+    circle_overlay = pg.image.load(osu_path_skins + f"/{skin_name}/hitcircleoverlay.png")
     circle_overlay = pg.transform.smoothscale(circle_overlay, (d, d))
-    number1 = pg.image.load(f"Skins/{skin_name}/default-2.png")
+    number1 = pg.image.load(osu_path_skins + f"/{skin_name}/default-2.png")
     number1 = pg.transform.smoothscale(number1, (number1.get_size()[0]*0.8, number1.get_size()[1]*0.8))
 
-    bg_path = os.path.join(osu_map_path, bg_file_name)
-    background = pg.image.load(bg_path).convert_alpha()
-    background.set_alpha(dim)
+    if has_background:
+        bg_path = os.path.join(osu_map_path, bg_file_name)
+        background = pg.image.load(bg_path).convert_alpha()
+        background.set_alpha(dim)
 
-    original_bg_width, original_bg_height = background.get_size()
+        original_bg_width, original_bg_height = background.get_size()
 
-    new_bg_height = int(original_bg_height * (WIDTH / original_bg_width))
+        new_bg_height = int(original_bg_height * (WIDTH / original_bg_width))
 
-    background = pg.transform.smoothscale(background, (WIDTH, new_bg_height))
+        background = pg.transform.smoothscale(background, (WIDTH, new_bg_height))
 
     running = True
     clock = pg.time.Clock()
     prev_time = time.time()
-    circle_prev_time = prev_time
     pg.mouse.set_visible(False)
 
-    hitsound = pg.mixer.Sound(f"Skins/{skin_name}/hitsound.wav")
+    hitsound = pg.mixer.Sound(osu_path_skins + f"/{skin_name}/normal-hitclap2.wav")
     hitsound.set_volume(hitsound_volume)
 
     pg.mixer.music.load(audio_file)
@@ -253,11 +300,11 @@ def main():
         
         if not pg.mixer.music.get_busy():
             print("Trak finished")
-            pg.time.delay(3000)
             running = False
 
         screen.fill((0, 0, 0))
-        screen.blit(background, background.get_rect(center=(WIDTH//2, HEIGHT//2)))
+        if has_background:
+            screen.blit(background, background.get_rect(center=(WIDTH//2, HEIGHT//2)))
         screen.blit(overlay, (offset_x, offset_y))
         
 
