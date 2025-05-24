@@ -4,6 +4,7 @@ import sys
 import configparser
 import os
 import ctypes
+import cProfile
 
 ctypes.windll.user32.SetProcessDPIAware()
 
@@ -44,10 +45,10 @@ osu_path_songs = os.path.join(osu_path + "/Songs")
 osu_path_skins = os.path.join(osu_path + "/Skins")
 
 os.system('cls')
-print(" --[PyOsu!]--\n")
-print(" 1- Play")
-print(" 2- Skin")
-print(" 3- Settings")
+print("--[PyOsu!]--\n")
+print("1- Play")
+print("2- Skin")
+print("3- Settings")
 menu_input = int(input("\n >>"))
 
 skins = []
@@ -69,8 +70,62 @@ def menu_skin(skin_name):
     with open('osuData.cfg', 'w') as configfile:
         config.write(configfile)
     return new_skin_name
-    
 
+
+def menu_settings():
+    os.system('cls' if os.name == 'nt' else 'clear')
+    print("[Settings]\n")
+
+    print("--Screen--")
+    print(" 1- Width:", WIDTH)
+    print(" 2- Height:", HEIGHT)
+    print(" 3- Fullscreen Mode:", fullscreen)
+    print(" 4- FPS:", FPS)
+
+    print("\n--In Game--")
+    print(" 5- Background DIM:", dim)
+    print(" 6- Play Area DIM:", play_area_dim)
+
+    print("\n--Audio--")
+    print(" 7- Music Volume:", volume)
+    print(" 8- Hitsounds Volume:", hitsound_volume)
+    print('\n[!] 1 equals 100% volume')
+
+    try:
+        setting_input = int(input("\n >> "))
+    except ValueError:
+        print("Invalid input. Must be a number.")
+        return
+
+    setting_map = {
+        1: ("Screen", "Width", int),
+        2: ("Screen", "Height", int),
+        3: ("Screen", "Fullscreen", lambda x: str(x).lower() in ["true", "1"]),
+        4: ("Screen", "FPS", int),
+        5: ("Game", "BackgroundDIM", float),
+        6: ("Game", "PlayAreaDIM", float),
+        7: ("Audio", "Volume", float),
+        8: ("Audio", "HitsoundVolume", float)
+    }
+
+    if setting_input in setting_map:
+        section, key, value_type = setting_map[setting_input]
+
+        try:
+            value_input = input(f"\nEnter new value for {key}: ")
+            value_converted = value_type(value_input)
+            if section not in config:
+                config[section] = {}
+            config[section][key] = str(value_converted)
+
+            with open('osuData.cfg', 'w') as configfile:
+                config.write(configfile)
+
+            print(f"{key} updated to {value_converted}.")
+        except ValueError:
+            print("Invalid input type.")
+    else:
+        print("Invalid option selected.")
 
 match menu_input:
     case 1:
@@ -79,11 +134,12 @@ match menu_input:
         skin_name = menu_skin(skin_name)
         input("\n[.] Skin has been successfully applied! Press any key to continue...")
     case 3:
-        pass
+        menu_settings()
 
 
 def main():
     
+        
 
     os.system('cls')
 
@@ -136,6 +192,8 @@ def main():
     circles = []
     combo_colors = []
     has_combo_colors = False
+    
+    
 
     has_background = False
 
@@ -222,10 +280,12 @@ def main():
     pg.mixer.init()
 
     if fullscreen:
-        screen = pg.display.set_mode((WIDTH, HEIGHT), pg.DOUBLEBUF | pg.FULLSCREEN)
+        screen = pg.display.set_mode((WIDTH, HEIGHT), pg.HWSURFACE | pg.DOUBLEBUF | pg.SCALED | pg.FULLSCREEN)
+
         
     else:
-        screen = pg.display.set_mode((WIDTH, HEIGHT), pg.DOUBLEBUF)
+        screen = pg.display.set_mode((WIDTH, HEIGHT), pg.HWSURFACE | pg.DOUBLEBUF)
+
 
     print("Fullscreen:", fullscreen)
 
@@ -251,6 +311,8 @@ def main():
         color_surface.fill(new_color)
         tinted_image.blit(color_surface, (0, 0), special_flags=pg.BLEND_RGBA_MULT)
         return tinted_image
+    
+   
 
     approach_circle = pg.transform.smoothscale(approach_circle, (d, d))
 
@@ -284,6 +346,9 @@ def main():
     pg.mixer.music.play(0)
 
     color_index = 0
+    trail_interval = 1000 / 60
+    last_trail_time = 0
+
 
     while running:
         
@@ -294,12 +359,15 @@ def main():
             elif event.type == pg.KEYDOWN:
                 if event.key == pg.K_q:
                     running = False
+                    
+                    
         curr_time = pg.mixer.music.get_pos()
         delta_time = (curr_time - prev_time) / 1000.0
         prev_time = curr_time
         
         if not pg.mixer.music.get_busy():
             print("Trak finished")
+            
             running = False
 
         screen.fill((0, 0, 0))
@@ -320,6 +388,8 @@ def main():
 
             circle_sprite_colored = colorize_white_image(circle_sprite, color)
             approach_circle_colored = colorize_white_image(approach_circle, color)
+
+
 
             time_since_appeared = (curr_time - appear_time)
 
@@ -362,9 +432,13 @@ def main():
                 circles_on_scene.pop(0)
 
         mouse_pos = pg.mouse.get_pos()
-        mouse_pos_history.append([mouse_pos, curr_time])
-        if len(mouse_pos_history) > 10:
-            mouse_pos_history.pop(0)
+
+        if curr_time - last_trail_time >= trail_interval:
+            mouse_pos_history.append([mouse_pos, curr_time])
+            last_trail_time = curr_time
+
+        mouse_pos_history = [pos for pos in mouse_pos_history if curr_time - pos[1] <= 100]
+
 
         for x in mouse_pos_history[:]:
             if x[1] >= curr_time - 100:
@@ -387,7 +461,11 @@ def main():
 
     pg.quit()
 
+    
+
 
 if __name__ == "__main__":
-    while map != -1:
-        main()
+    while True:
+        cProfile.run('main()')
+        input("")
+        
