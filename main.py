@@ -22,6 +22,9 @@ WIDTH = config.getint('Screen', 'Width')
 HEIGHT = config.getint('Screen', 'Height')
 fullscreen = config.getboolean('Screen', 'Fullscreen')
 
+
+
+
 target_aspect = 4 / 3
 if WIDTH / HEIGHT > target_aspect:
     game_height = HEIGHT*0.8
@@ -279,8 +282,11 @@ def main():
     pg.init()
     pg.mixer.init()
 
+
+    font = pg.font.SysFont("Arial", 24)
+    
     if fullscreen:
-        screen = pg.display.set_mode((WIDTH, HEIGHT), pg.HWSURFACE | pg.DOUBLEBUF | pg.SCALED | pg.FULLSCREEN)
+        screen = pg.display.set_mode((WIDTH, HEIGHT), pg.HWSURFACE | pg.DOUBLEBUF | pg.FULLSCREEN)
 
         
     else:
@@ -289,7 +295,7 @@ def main():
 
     print("Fullscreen:", fullscreen)
 
-    pg.display.set_caption("Osu!")
+    pg.display.set_caption("PyOsu!")
     icon = pg.image.load("Data/osu_logo.png")
     pg.display.set_icon(icon)
 
@@ -452,10 +458,14 @@ def main():
         #screen.blit(cursor_middle, cursor_middle.get_rect(center=mouse_pos))
 
         angle -= 0.5
-        pg.display.flip()
 
         fps = int(clock.get_fps())
-        pg.display.set_caption(f"PyOsu! FPS: {fps}")
+        fps_text = font.render(f"FPS: {fps}", False, (255, 255, 255))
+        info_quit = font.render('Press "q" to exit', False, (255, 255, 255))
+        screen.blit(fps_text, (WIDTH - fps_text.get_width() - 10, 10))
+        screen.blit(info_quit,  (WIDTH - info_quit.get_width() - 10, 40))
+
+        pg.display.flip()
 
         clock.tick(FPS)
 
