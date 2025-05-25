@@ -409,12 +409,10 @@ def main():
             temp_approach_circle = approach_circle_colored.copy()
 
             #temp_number = number1.copy()
-            temp_approach_circle = approach_circle.copy()
 
             temp_circle.set_alpha(alpha)
             temp_approach_circle.set_alpha(alpha)
             #temp_number.set_alpha(alpha)
-            temp_approach_circle.set_alpha(alpha)
             
 
             scale_factor = max(1, 4 - 3 * (time_since_appeared / preempt))
