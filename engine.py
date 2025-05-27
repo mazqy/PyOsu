@@ -3,7 +3,7 @@ import time
 import sys
 import os
 import ctypes
-from config.settings import get_setting, save_setting
+from config.settings import get_setting
 from menu.beatmap_menu import show_beatmaps_menu
 
 def game():
@@ -36,18 +36,30 @@ def game():
     scale_y = game_height / 384
 
     overlay = pg.Surface((game_width, game_height), pg.SRCALPHA)
-    overlay.fill((0, 0, 0, play_area_dim))
+    overlay.fill((0, 0, 0, 0))
 
-    osu_path = os.path.join(f"C:/Users/{os.getlogin()}/AppData/Local/osu!")
-    osu_path_songs = os.path.join(osu_path + "/Songs")
-    osu_path_skins = os.path.join(osu_path + "/Skins")
+    pg.draw.rect(
+        overlay,
+        (0, 0, 0, play_area_dim),
+        (0, 0, game_width, game_height),
+        border_radius=15
+)
+
+
+
+    osu_path = get_setting('Paths', 'osumainpath')
+    osu_path_songs = get_setting('Paths', 'osusongspath')
+    osu_path_skins = get_setting('Paths', 'osuskinspath')
+
+
     osu_info_path, osu_map_path = show_beatmaps_menu(osu_path_songs)
 
     circles = []
     combo_colors = []
     has_combo_colors = False
     has_background = False
-
+    os.system('cls' if os.name == 'nt' else 'clear')
+    print("[Beatmap Info]\n")
     with open(osu_info_path, encoding='utf-8') as f:
         hitobjects_section = False
         combo_colors = []
@@ -130,11 +142,11 @@ def game():
     font = pg.font.SysFont("Arial", 24)
     
     if fullscreen:
-        screen = pg.display.set_mode((WIDTH, HEIGHT), pg.HWSURFACE | pg.DOUBLEBUF | pg.FULLSCREEN)
+        screen = pg.display.set_mode((WIDTH, HEIGHT),pg.FULLSCREEN)
 
         
     else:
-        screen = pg.display.set_mode((WIDTH, HEIGHT), pg.HWSURFACE | pg.DOUBLEBUF)
+        screen = pg.display.set_mode((WIDTH, HEIGHT))
 
     print("Fullscreen:", fullscreen)
 

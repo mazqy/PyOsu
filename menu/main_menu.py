@@ -6,13 +6,14 @@ def show_main_menu():
     print("1- Play")
     print("2- Skin")
     print("3- Settings")
+    print("4- Exit")
     
     while True:
         try:
             option_input = int(input("\n >>"))
-            if option_input in (1, 2, 3):
+            if option_input in (1, 2, 3, 4):
                 return option_input
             else:
-                print("\n[!] You can only from 1 to 3")
+                print("\n[!] Invalid input. You can only from 1 to 4.")
         except ValueError:
-            print("\n[!] You can only write positive numbers")
+            print("\n[!] invalid input. You can only write positive numbers.")

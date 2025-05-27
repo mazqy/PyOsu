@@ -1,9 +1,9 @@
 import os
 from config.settings import save_setting, get_setting
+from config.settings import get_setting
 
 def show_menu_skins():
-    osu_path = os.path.join(f"C:/Users/{os.getlogin()}/AppData/Local/osu!")
-    osu_path_skins = os.path.join(osu_path + "/Skins")
+    osu_path_skins = get_setting('Paths', 'osuskinspath')
     skin_name = get_setting('General', 'skin')
 
     os.system('cls' if os.name == 'nt' else 'clear')

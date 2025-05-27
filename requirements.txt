@@ -1,1 +1,1 @@
-pygame-ce cProfile ctypes
+pygame-ce cProfile ctypes pyfiglet
