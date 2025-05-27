@@ -1,0 +1,4 @@
+PyOsu! ToDo list
+
+-Error message when no skin name or not found
+-Colors

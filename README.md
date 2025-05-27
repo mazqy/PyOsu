@@ -1,12 +1,11 @@
-# Osu! Clone in Python
+# PyOsu
 
-A rhythm game inspired by [osu!](https://osu.ppy.sh/), developed using Python and Pygame. This project loads and plays `.osu` beatmaps from your installed osu! directory.
+A replica of [osu!](https://osu.ppy.sh/), developed using Python and Pygame-ce. This project loads and plays `.osu` beatmaps from your installed osu! directory.
 
 ## Features
 
-- Parse and watch `.osu` beatmaps.
-- Some skins support.
-- Configurable settings via `.cfg` file.
+- Parse and play `.osu` beatmaps.
+- Skins support.
 
 ## Requirements
 
