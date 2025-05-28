@@ -7,21 +7,28 @@ from config.settings import save_setting
 
 op_system = platform.system()
 info_message = "Screen: {}x{}; Monitor/s HZ: {}"
-osu_path = os.path.join(f"C:/Users/{os.getlogin()}/AppData/Local/osu!")
 
 def detect_win_settings():
     import win32api
     import ctypes
     print("Loading settings for your computer...")
+    osu_path = os.path.join(f"C:/Users/{os.getlogin()}/AppData/Local/osu!")
     ctypes.windll.user32.SetProcessDPIAware()
-    pg.init()
-    display_info = pg.display.Info()
-    screen_height = display_info.current_h
-    screen_width = display_info.current_w
-    device = win32api.EnumDisplayDevices()
-    device_config = win32api.EnumDisplaySettings(device.DeviceName, -1)
-    monitor_hz = device_config.DisplayFrequency
-    pg.quit()
+    try:
+        pg.init()
+        display_info = pg.display.Info()
+        screen_height = display_info.current_h
+        screen_width = display_info.current_w
+        device = win32api.EnumDisplayDevices()
+        device_config = win32api.EnumDisplaySettings(device.DeviceName, -1)
+        monitor_hz = device_config.DisplayFrequency
+        save_setting('Screen', 'width', screen_width)
+        save_setting('Screen', 'height', screen_height)
+        save_setting('Screen', 'FPS', monitor_hz*2)
+        pg.quit()
+    except:
+        os.system('cls' if os.name == 'nt' else 'clear')
+        input("[!] Failed to detect some display settings. Default settings will be applyed instead.")
 
     if os.path.exists(osu_path):
         os.system('cls' if os.name == 'nt' else 'clear')
@@ -31,13 +38,13 @@ def detect_win_settings():
             if change_option.lower().strip() == "y":
                 root = tk.Tk()
                 root.withdraw()
-                selected_folder = filedialog.askdirectory(title="Select Osu! folder")
-                save_setting('Paths', 'osumainpath', selected_folder)
-                save_setting('Paths', 'osuskinspath', os.path.join(selected_folder + "/Songs"))
-                save_setting('Paths', 'osusongspath', os.path.join(selected_folder + "/Skins"))
+                osu_path = filedialog.askdirectory(title="Select Osu! folder")
 
             elif change_option.lower().strip() == "n":
                 pass
+            save_setting('Paths', 'osumainpath', osu_path)
+            save_setting('Paths', 'osuskinspath', os.path.join(osu_path + "/Skins"))
+            save_setting('Paths', 'osusongspath', os.path.join(osu_path + "/Songs"))
         except:
             print('[!] Invalid input. Please enter "y" for yes, "n" for no, or just press Enter.')
     else:
@@ -50,10 +57,10 @@ def detect_win_settings():
             if change_option.lower().strip() == "y":
                 root = tk.Tk()
                 root.withdraw()
-                selected_folder = filedialog.askdirectory(title="Select Osu! folder")
-                save_setting('Paths', 'osumainpath', selected_folder)
-                save_setting('Paths', 'osuskinspath', os.path.join(selected_folder + "/Songs"))
-                save_setting('Paths', 'osusongspath', os.path.join(selected_folder + "/Skins"))
+                osu_path = filedialog.askdirectory(title="Select Osu! folder")
+                save_setting('Paths', 'osumainpath', osu_path)
+                save_setting('Paths', 'osuskinspath', os.path.join(osu_path + "/Skins"))
+                save_setting('Paths', 'osusongspath', os.path.join(osu_path + "/Songs"))
 
             elif change_option.lower().strip() == "n":
                 pass
@@ -75,9 +82,12 @@ def detect_linux_settings():
             if "Refresh" in line:
                 monitor_hz = line.split(":")[1].strip()
         
-        return info_message.format(screen_width, screen_height, monitor_hz)
+        save_setting('Screen', 'width', screen_width)
+        save_setting('Screen', 'height', screen_height)
+        save_setting('Screen', 'FPS', monitor_hz*2)
     except:
-        return "[!] Failed to detect some Linux display settings. Default settings will be applyed instead."
+        return "[!] Failed to detect some display settings. Default settings will be applyed instead."
+        
 
 
 def show_autoconfig():
@@ -88,4 +98,4 @@ def show_autoconfig():
         os.system('cls' if os.name == 'nt' else 'clear')
         print(detect_linux_settings())
     else:
-        print('[✗] PyOsu! does not support "{}" operating system'.format(op_system))
+        print('[✗] PyOsu! does not support "{}" operating system. You cannot use PyOsu! yet.'.format(op_system))
