@@ -8,8 +8,12 @@ def show_menu_skins():
 
     os.system('cls' if os.name == 'nt' else 'clear')
 
-    print("[Skins] (Not all skins compatible)\n")
-    print("Current: " + skin_name + "\n")
+    print("[Skins] (Not all skins compatible yet)\n")
+
+    if skin_name:
+        print("Current skin: " + skin_name + "\n")
+    else:
+        print("[!] No skin selected yet. Please select one to be able to play.\n")
 
     skins = []
 
@@ -18,9 +22,12 @@ def show_menu_skins():
         skins.append(skin)
         print(f"{skin_index}- {skin}")
         skin_index+=1
-
-    skin_input = int(input("\n >>"))
-
-    save_setting('General', 'Skin',skins[skin_input - 1])
-
-    input("\n[✓] Skin applyed succesfuly")
+    while True:
+        try:
+            skin_input = int(input("\n >>"))
+            save_setting('General', 'Skin',skins[skin_input - 1])
+            input("\n[✓] Skin applyed succesfuly")
+            break
+        except:
+            print(f"\n[!] Invalid iniput. Please write a number between 1 to {skin_index - 1}.")
+    

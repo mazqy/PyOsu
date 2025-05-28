@@ -17,11 +17,15 @@ def show_beatmaps_menu(osu_path_songs):
         beatmap_index += 1
 
     print("\n[i] Press Ctrl + F to search (Legacy Console only)")
-    print('[i] Right-click the top bar and select "Find" to search\n')
-
-    beatmap_option = int(input(" >>"))
-    beatmap = available_beatmaps[beatmap_option - 1]
-    osu_beatmap_path = os.path.join(osu_path_songs, beatmap)
+    print('[i] Right-click the top bar and select "Find" to search')
+    while True:
+        try:
+            beatmap_option = int(input("\n >>"))
+            beatmap = available_beatmaps[beatmap_option - 1]
+            osu_beatmap_path = os.path.join(osu_path_songs, beatmap)
+            break
+        except:
+            print(f"\n[!] Invalid input. Please write a number between 1 and {beatmap_index - 1}.")
 
     os.system('cls' if os.name == 'nt' else 'clear')
 
@@ -37,10 +41,13 @@ def show_beatmaps_menu(osu_path_songs):
             print(f"{num}- {file}")
             num += 1
 
-    print("\n[!] Difficulties are not sorted by star rate\n")
+    print("\n[!] Difficulties are not sorted by star rate")
+    while True:
+        try:
+            map_difficulty_index = int(input("\n >>"))
+            map_difficulty = beatmap_dificulties[map_difficulty_index - 1]
+            return [os.path.join(osu_beatmap_path, map_difficulty), osu_beatmap_path]
+        except:
+            print(f"\n[!] Invalid input. Please write a number between 1 and {num - 1}.")
 
-    map_difficulty_index = int(input(" >>"))
-
-    map_difficulty = beatmap_dificulties[map_difficulty_index - 1]
-
-    return [os.path.join(osu_beatmap_path, map_difficulty), osu_beatmap_path  ]
+    
