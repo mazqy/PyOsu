@@ -1,3 +1,6 @@
 PyOsu! ToDo list
 
 -Colors
+-Check if the skin selected is compatible
+-Configure donation page
+-Try design no console menu style

@@ -151,7 +151,7 @@ def game():
     print("Fullscreen:", fullscreen)
 
     pg.display.set_caption("PyOsu!")
-    icon = pg.image.load("Data/osu_logo.png")
+    icon = pg.image.load("data/logo/256x256.png")
     pg.display.set_icon(icon)
 
     approach_circle = pg.image.load(osu_path_skins + f"/{skin_name}/approachcircle.png").convert_alpha()

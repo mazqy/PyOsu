@@ -1,1 +1,4 @@
-pygame-ce cProfile pyfiglet pywin32
+pygame-ce
+pywin32
+configparser
+tkinter

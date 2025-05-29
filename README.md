@@ -1,4 +1,4 @@
-# PyOsu
+# PyOsu!
 
 A replica of [osu!](https://osu.ppy.sh/), developed using Python and Pygame-ce. This project loads and plays `.osu` beatmaps from your installed osu! directory.
 

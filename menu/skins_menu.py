@@ -26,8 +26,12 @@ def show_menu_skins():
         try:
             skin_input = int(input("\n >>"))
             save_setting('General', 'Skin',skins[skin_input - 1])
-            input("\n[✓] Skin applyed succesfuly")
-            break
+            if osu_path_skins in (osu_path_skins+("/approach.png", "/circle.png")):
+                input("\n[✓] Skin applyed succesfuly")
+                break
+            else:
+                input("\n[!] This skin is not compatible for playing. Try another one.")            
+                
         except:
             print(f"\n[!] Invalid iniput. Please write a number between 1 to {skin_index - 1}.")
     
